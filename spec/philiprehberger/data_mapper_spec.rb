@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spec_helper"
+
 RSpec.describe Philiprehberger::DataMapper do
   describe ".define" do
     it "returns a Mapping instance" do
