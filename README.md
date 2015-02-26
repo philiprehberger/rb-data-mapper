@@ -79,15 +79,50 @@ mapping = Philiprehberger::DataMapper.define do
 end
 ```
 
+### Nested key access
+
+Use dot-notation in `from:` to access nested hash keys:
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  field :city, from: "address.city"
+  field :zip, from: "address.zip"
+end
+
+input = { address: { city: "Vienna", zip: "1010" } }
+mapping.map(input)
+# => { city: "Vienna", zip: "1010" }
+```
+
+### Type coercion
+
+Use the `type:` parameter to automatically coerce values:
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  field :name, from: :raw_name, type: :string
+  field :age, from: :raw_age, type: :integer
+  field :score, from: :raw_score, type: :float
+  field :active, from: :raw_active, type: :boolean
+end
+
+input = { raw_name: 123, raw_age: "30", raw_score: "9.5", raw_active: "true" }
+mapping.map(input)
+# => { name: "123", age: 30, score: 9.5, active: true }
+```
+
+Supported types: `:string`, `:integer`, `:float`, `:boolean`.
+
 ## API
 
 | Method | Description |
 |--------|-------------|
 | `DataMapper.define(&block)` | Create a new mapping with the DSL |
-| `Mapping#field(target, from:, default:, &transform)` | Define a field mapping |
+| `Mapping#field(target, from:, default:, type:, &transform)` | Define a field mapping |
 | `Mapping#map(hash)` | Apply mapping to a single hash |
 | `Mapping#map_all(array)` | Apply mapping to an array of hashes |
 | `Mapping#from_csv(string, headers: true)` | Parse CSV and map each row |
+| `Mapping#from_json(json_string)` | Parse JSON string and map the result |
 
 ## Development
 

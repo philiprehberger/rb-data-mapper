@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-12
+
+### Added
+- Nested key access via dot-notation in `from:` (e.g., `from: "address.city"`)
+- Built-in type coercion with `type:` parameter (`:string`, `:integer`, `:float`, `:boolean`)
+- `from_json` method for parsing and mapping JSON strings
+
 ## [0.1.0] - 2026-03-10
 
 ### Added
