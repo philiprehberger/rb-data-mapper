@@ -1,46 +1,81 @@
 # frozen_string_literal: true
 
-require "csv"
-require "json"
+require_relative "parsable"
+require_relative "reversible"
 
 module Philiprehberger
   module DataMapper
     class Mapping
+      include Parsable
+      include Reversible
+
       def initialize(&block)
         @fields = []
+        @computed_fields = []
         instance_eval(&block) if block
       end
 
-      def field(target, from: nil, default: nil, type: nil, &transform)
-        @fields << FieldDefinition.new(target, from: from, default: default, type: type, &transform)
+      def field(target, from: nil, default: nil, type: nil, if: nil, validate: nil, split: nil, &transform)
+        @fields << FieldDefinition.new(
+          target, from: from, default: default, type: type,
+          if: binding.local_variable_get(:if), validate: validate, split: split, &transform
+        )
+      end
+
+      def computed(target, &block)
+        @computed_fields << ComputedDefinition.new(target, &block)
+      end
+
+      def array_field(target, from: nil, split: ",", &transform)
+        field(target, from: from, split: split, &transform)
       end
 
       def map(hash)
-        @fields.each_with_object({}) do |field, result|
-          value = dig_value(hash, field.source)
-          result[field.target] = field.apply(value)
-        end
+        result = map_fields(hash)
+        apply_computed(hash, result)
+        result
+      end
+
+      def map_with_validation(hash)
+        result = {}
+        errors = collect_errors(hash, result)
+        apply_computed(hash, result)
+        MappingResult.new(result, errors)
       end
 
       def map_all(array)
         array.map { |hash| map(hash) }
       end
 
-      def from_csv(csv_string, headers: true)
-        rows = CSV.parse(csv_string, headers: headers)
-        rows.map { |row| map(row_to_hash(row)) }
-      end
+      private
 
-      def from_json(json_string)
-        parsed = JSON.parse(json_string)
-
-        case parsed
-        when Array then map_all(parsed.map { |h| symbolize_keys(h) })
-        when Hash  then map(symbolize_keys(parsed))
+      def map_fields(hash)
+        applicable_fields(hash).each_with_object({}) do |f, result|
+          value = dig_value(hash, f.source)
+          result[f.target] = f.apply(value)
         end
       end
 
-      private
+      def collect_errors(hash, result)
+        errors = []
+        applicable_fields(hash).each do |f|
+          value = dig_value(hash, f.source)
+          mapped = f.apply(value)
+          errors << { field: f.target, value: mapped } unless f.valid?(mapped)
+          result[f.target] = mapped
+        end
+        errors
+      end
+
+      def applicable_fields(hash)
+        @fields.select { |f| f.include?(hash) }
+      end
+
+      def apply_computed(hash, result)
+        @computed_fields.each do |c|
+          result[c.target] = c.compute(hash)
+        end
+      end
 
       def dig_value(hash, source)
         key_str = source.to_s
@@ -57,16 +92,6 @@ module Philiprehberger
 
           current[key.to_sym] || current[key]
         end
-      end
-
-      def symbolize_keys(hash)
-        hash.each_with_object({}) do |(key, value), result|
-          result[key.to_sym] = value.is_a?(Hash) ? symbolize_keys(value) : value
-        end
-      end
-
-      def row_to_hash(row)
-        row.to_h.transform_keys(&:to_sym)
       end
     end
   end

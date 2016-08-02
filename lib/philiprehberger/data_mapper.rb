@@ -2,6 +2,8 @@
 
 require_relative "data_mapper/version"
 require_relative "data_mapper/field_definition"
+require_relative "data_mapper/computed_definition"
+require_relative "data_mapper/mapping_result"
 require_relative "data_mapper/mapping"
 
 module Philiprehberger
