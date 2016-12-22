@@ -15,15 +15,12 @@ module Philiprehberger
         instance_eval(&block) if block
       end
 
-      def field(target, from: nil, default: nil, type: nil, if: nil, validate: nil, split: nil, &transform)
-        @fields << FieldDefinition.new(
-          target, from: from, default: default, type: type,
-          if: binding.local_variable_get(:if), validate: validate, split: split, &transform
-        )
+      def field(target, **opts, &transform)
+        @fields << FieldDefinition.new(target, **opts, &transform)
       end
 
-      def computed(target, &block)
-        @computed_fields << ComputedDefinition.new(target, &block)
+      def computed(target, &)
+        @computed_fields << ComputedDefinition.new(target, &)
       end
 
       def array_field(target, from: nil, split: ",", &transform)

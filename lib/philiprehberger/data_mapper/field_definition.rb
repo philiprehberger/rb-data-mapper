@@ -8,14 +8,14 @@ module Philiprehberger
       BOOLEAN_TRUE_VALUES = %w[true 1 yes].freeze
       BOOLEAN_FALSE_VALUES = %w[false 0 no].freeze
 
-      def initialize(target, from: nil, default: nil, type: nil, if: nil, validate: nil, split: nil, &transform)
+      def initialize(target, **opts, &transform)
         @target = target
-        @source = from || target
-        @default = default
-        @type = type
-        @condition = binding.local_variable_get(:if)
-        @validator = validate
-        @split_delimiter = split
+        @source = opts[:from] || target
+        @default = opts[:default]
+        @type = opts[:type]
+        @condition = opts[:if]
+        @validator = opts[:validate]
+        @split_delimiter = opts[:split]
         @transform = transform
       end
 
