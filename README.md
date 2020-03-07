@@ -209,8 +209,8 @@ result.errors  # => [{ field: :age, value: -1 }, { field: :name, value: "" }]
 
 ```bash
 bundle install
-bundle exec rspec      # Run tests
-bundle exec rubocop    # Check code style
+bundle exec rspec
+bundle exec rubocop
 ```
 
 ## License
