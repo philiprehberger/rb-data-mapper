@@ -3,6 +3,7 @@
 [![Tests](https://github.com/philiprehberger/rb-data-mapper/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rb-data-mapper/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-data_mapper.svg)](https://rubygems.org/gems/philiprehberger-data_mapper)
 [![License](https://img.shields.io/github/license/philiprehberger/rb-data-mapper)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Data transformation DSL for mapping hashes and CSV rows
 
@@ -215,4 +216,4 @@ bundle exec rubocop
 
 ## License
 
-MIT
+[MIT](LICENSE)
