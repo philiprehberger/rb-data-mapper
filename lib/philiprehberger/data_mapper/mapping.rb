@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "parsable"
-require_relative "reversible"
+require_relative 'parsable'
+require_relative 'reversible'
 
 module Philiprehberger
   module DataMapper
@@ -23,7 +23,7 @@ module Philiprehberger
         @computed_fields << ComputedDefinition.new(target, &)
       end
 
-      def array_field(target, from: nil, split: ",", &transform)
+      def array_field(target, from: nil, split: ',', &transform)
         field(target, from: from, split: split, &transform)
       end
 
@@ -78,9 +78,9 @@ module Philiprehberger
         key_str = source.to_s
         return hash[source] if hash.key?(source)
         return hash[key_str] if hash.key?(key_str)
-        return unless key_str.include?(".")
+        return unless key_str.include?('.')
 
-        dig_nested(hash, key_str.split("."))
+        dig_nested(hash, key_str.split('.'))
       end
 
       def dig_nested(hash, keys)
