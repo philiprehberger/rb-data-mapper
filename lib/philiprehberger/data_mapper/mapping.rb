@@ -23,8 +23,8 @@ module Philiprehberger
         @computed_fields << ComputedDefinition.new(target, &)
       end
 
-      def array_field(target, from: nil, split: ',', &transform)
-        field(target, from: from, split: split, &transform)
+      def array_field(target, split: ',', **opts, &transform)
+        field(target, split: split, **opts, &transform)
       end
 
       def map(hash)
