@@ -169,6 +169,16 @@ mapping.reverse(output)
 # => { name: "Alice", age: 30 }
 ```
 
+### Introspection
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  field(:name, from: :Name)
+  computed(:upper) { |r| r[:Name].upcase }
+end
+mapping.field_names  # => [:name, :upper]
+```
+
 ### Validation
 
 Validate mapped values using the `validate:` parameter. Use `map_with_validation` to collect errors:
@@ -201,6 +211,7 @@ result.errors  # => [{ field: :age, value: -1 }, { field: :name, value: "" }]
 | `Mapping#map(hash)` | Apply mapping to a single hash |
 | `Mapping#map_with_validation(hash)` | Apply mapping and return a `MappingResult` with errors |
 | `Mapping#map_all(array)` | Apply mapping to an array of hashes |
+| `Mapping#field_names` | Array of symbol targets for declared fields and computed fields |
 | `Mapping#reverse(hash)` | Transform output hash back to input schema |
 | `Mapping#from_csv(string, headers: true)` | Parse CSV and map each row |
 | `Mapping#from_json(json_string)` | Parse JSON string and map the result |
