@@ -63,6 +63,47 @@ RSpec.describe Philiprehberger::DataMapper do
       end
     end
 
+    describe '#map_lazy' do
+      it 'returns an Enumerator::Lazy' do
+        mapping = described_class.new { field :name, from: :n }
+        expect(mapping.map_lazy([{ n: 'Alice' }])).to be_a(Enumerator::Lazy)
+      end
+
+      it 'supports .first(n) without forcing full enumeration' do
+        mapping = described_class.new { field :name, from: :n }
+        input = [{ n: 'Alice' }, { n: 'Bob' }, { n: 'Carol' }]
+        expect(mapping.map_lazy(input).first(2)).to eq(
+          [{ name: 'Alice' }, { name: 'Bob' }]
+        )
+      end
+
+      it 'produces values equal to #map element-wise' do
+        mapping = described_class.new do
+          field :name, from: :n
+          field :years, from: :age, &:to_i
+        end
+        input = [{ n: 'Alice', age: '30' }, { n: 'Bob', age: '25' }]
+        expected = input.map { |row| mapping.map(row) }
+        expect(mapping.map_lazy(input).to_a).to eq(expected)
+      end
+
+      it 'chains .select and remains lazy' do
+        mapping = described_class.new { field :years, from: :age, &:to_i }
+        input = [{ age: '10' }, { age: '20' }, { age: '30' }]
+        chained = mapping.map_lazy(input).select { |row| row[:years] >= 20 }
+        expect(chained).to be_a(Enumerator::Lazy)
+        expect(chained.to_a).to eq([{ years: 20 }, { years: 30 }])
+      end
+
+      it 'terminates on an infinite enumerable with .first(n)' do
+        mapping = described_class.new { field :id }
+        infinite = (1..).lazy.map { |i| { 'id' => i } }
+        expect(mapping.map_lazy(infinite).first(3)).to eq(
+          [{ id: 1 }, { id: 2 }, { id: 3 }]
+        )
+      end
+    end
+
     describe '#from_csv' do
       it 'parses CSV and maps each row' do
         csv = "name,age\nAlice,30\nBob,25\n"

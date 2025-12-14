@@ -55,6 +55,20 @@ mapping.map_all(input)
 # => [{ full_name: "Alice", years: 30, role: "member" }, ...]
 ```
 
+### Lazy streaming
+
+Use `map_lazy` to pipe huge datasets without materializing an intermediate array. It returns an `Enumerator::Lazy` that applies `#map` per-element, so it composes with `.first`, `.select`, `.reject`, and works on infinite enumerables:
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  field :id
+end
+
+infinite = (1..).lazy.map { |i| { "id" => i } }
+mapping.map_lazy(infinite).first(3)
+# => [{ id: 1 }, { id: 2 }, { id: 3 }]
+```
+
 ### Parse CSV
 
 ```ruby
@@ -211,6 +225,7 @@ result.errors  # => [{ field: :age, value: -1 }, { field: :name, value: "" }]
 | `Mapping#map(hash)` | Apply mapping to a single hash |
 | `Mapping#map_with_validation(hash)` | Apply mapping and return a `MappingResult` with errors |
 | `Mapping#map_all(array)` | Apply mapping to an array of hashes |
+| `Mapping#map_lazy(enumerable)` | Return a `Lazy` Enumerator applying `#map` per-element for streaming |
 | `Mapping#field_names` | Array of symbol targets for declared fields and computed fields |
 | `Mapping#reverse(hash)` | Transform output hash back to input schema |
 | `Mapping#from_csv(string, headers: true)` | Parse CSV and map each row |

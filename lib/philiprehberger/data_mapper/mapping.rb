@@ -44,6 +44,10 @@ module Philiprehberger
         array.map { |hash| map(hash) }
       end
 
+      def map_lazy(enumerable)
+        enumerable.lazy.map { |hash| map(hash) }
+      end
+
       # Names (targets) of every declared field, including computed fields.
       #
       # @return [Array<Symbol>]
