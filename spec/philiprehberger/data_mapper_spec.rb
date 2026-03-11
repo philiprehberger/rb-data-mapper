@@ -71,10 +71,12 @@ RSpec.describe Philiprehberger::DataMapper do
           field :years, from: :age, &:to_i
         end
         result = mapping.from_csv(csv)
-        expect(result).to eq([
-          { full_name: "Alice", years: 30 },
-          { full_name: "Bob", years: 25 }
-        ])
+        expect(result).to eq(
+          [
+            { full_name: "Alice", years: 30 },
+            { full_name: "Bob", years: 25 }
+          ]
+        )
       end
     end
   end

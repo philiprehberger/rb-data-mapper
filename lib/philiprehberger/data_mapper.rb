@@ -6,8 +6,8 @@ require_relative "data_mapper/mapping"
 
 module Philiprehberger
   module DataMapper
-    def self.define(&block)
-      Mapping.new(&block)
+    def self.define(&)
+      Mapping.new(&)
     end
   end
 end
