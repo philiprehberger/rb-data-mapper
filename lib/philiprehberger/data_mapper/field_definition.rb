@@ -38,7 +38,7 @@ module Philiprehberger
       end
 
       def coerce_boolean(value)
-        return value if value == true || value == false
+        return value if [true, false].include?(value)
 
         str = value.to_s.downcase
         return true if BOOLEAN_TRUE_VALUES.include?(str)

@@ -46,16 +46,16 @@ module Philiprehberger
         key_str = source.to_s
         return hash[source] if hash.key?(source)
         return hash[key_str] if hash.key?(key_str)
+        return unless key_str.include?(".")
 
-        if key_str.include?(".")
-          keys = key_str.split(".")
-          keys.reduce(hash) do |current, key|
-            break nil if current.nil?
+        dig_nested(hash, key_str.split("."))
+      end
 
-            if current.is_a?(Hash)
-              current[key.to_sym] || current[key]
-            end
-          end
+      def dig_nested(hash, keys)
+        keys.reduce(hash) do |current, key|
+          break nil unless current.is_a?(Hash)
+
+          current[key.to_sym] || current[key]
         end
       end
 
