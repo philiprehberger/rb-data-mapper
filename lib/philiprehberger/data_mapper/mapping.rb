@@ -15,8 +15,8 @@ module Philiprehberger
         instance_eval(&block) if block
       end
 
-      def field(target, **opts, &)
-        @fields << FieldDefinition.new(target, **opts, &)
+      def field(target, ...)
+        @fields << FieldDefinition.new(target, ...)
       end
 
       def computed(target, &)
