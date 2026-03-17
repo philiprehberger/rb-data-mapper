@@ -177,5 +177,206 @@ RSpec.describe Philiprehberger::DataMapper do
         expect(result).to eq([{ name: "Alice" }, { name: "Bob" }])
       end
     end
+
+    describe "conditional mapping" do
+      it "includes field when condition is met" do
+        mapping = described_class.new do
+          field :role, from: :raw_role, if: ->(record) { record[:admin] }
+        end
+        result = mapping.map({ raw_role: "superuser", admin: true })
+        expect(result).to eq({ role: "superuser" })
+      end
+
+      it "excludes field when condition is not met" do
+        mapping = described_class.new do
+          field :role, from: :raw_role, if: ->(record) { record[:admin] }
+        end
+        result = mapping.map({ raw_role: "superuser", admin: false })
+        expect(result).to eq({})
+      end
+
+      it "mixes conditional and unconditional fields" do
+        mapping = described_class.new do
+          field :name
+          field :role, from: :raw_role, if: ->(record) { record[:admin] }
+        end
+        result = mapping.map({ name: "Alice", raw_role: "admin", admin: false })
+        expect(result).to eq({ name: "Alice" })
+      end
+
+      it "always includes fields without a condition" do
+        mapping = described_class.new do
+          field :name
+        end
+        result = mapping.map({ name: "Bob" })
+        expect(result).to eq({ name: "Bob" })
+      end
+    end
+
+    describe "computed fields" do
+      it "derives a field from the full record" do
+        mapping = described_class.new do
+          computed(:full_name) { |record| "#{record[:first]} #{record[:last]}" }
+        end
+        result = mapping.map({ first: "Alice", last: "Smith" })
+        expect(result).to eq({ full_name: "Alice Smith" })
+      end
+
+      it "combines regular and computed fields" do
+        mapping = described_class.new do
+          field :email
+          computed(:greeting) { |record| "Hello, #{record[:name]}!" }
+        end
+        result = mapping.map({ email: "a@b.com", name: "Alice" })
+        expect(result).to eq({ email: "a@b.com", greeting: "Hello, Alice!" })
+      end
+
+      it "supports multiple computed fields" do
+        mapping = described_class.new do
+          computed(:full_name) { |record| "#{record[:first]} #{record[:last]}" }
+          computed(:initials) { |record| "#{record[:first][0]}#{record[:last][0]}" }
+        end
+        result = mapping.map({ first: "Alice", last: "Smith" })
+        expect(result).to eq({ full_name: "Alice Smith", initials: "AS" })
+      end
+    end
+
+    describe "collection mapping (array_field)" do
+      it "splits a string value into an array" do
+        mapping = described_class.new do
+          array_field :tags, from: :tag_csv, split: ","
+        end
+        result = mapping.map({ tag_csv: "ruby,rails,gem" })
+        expect(result).to eq({ tags: %w[ruby rails gem] })
+      end
+
+      it "uses comma as default delimiter" do
+        mapping = described_class.new do
+          array_field :tags, from: :tag_csv
+        end
+        result = mapping.map({ tag_csv: "a,b,c" })
+        expect(result).to eq({ tags: %w[a b c] })
+      end
+
+      it "supports custom delimiter" do
+        mapping = described_class.new do
+          array_field :items, from: :item_str, split: "|"
+        end
+        result = mapping.map({ item_str: "one|two|three" })
+        expect(result).to eq({ items: %w[one two three] })
+      end
+
+      it "applies transform after splitting" do
+        mapping = described_class.new do
+          array_field :tags, from: :tag_csv, split: "," do |arr|
+            arr.map(&:strip)
+          end
+        end
+        result = mapping.map({ tag_csv: "ruby, rails, gem" })
+        expect(result).to eq({ tags: %w[ruby rails gem] })
+      end
+
+      it "handles nil source value with default" do
+        mapping = described_class.new do
+          array_field :tags, from: :tag_csv, split: ","
+        end
+        result = mapping.map({})
+        expect(result).to eq({ tags: nil })
+      end
+    end
+
+    describe "reverse mapping" do
+      it "transforms output back to input schema" do
+        mapping = described_class.new do
+          field :full_name, from: :name
+          field :years, from: :age
+        end
+        output = { full_name: "Alice", years: 30 }
+        result = mapping.reverse(output)
+        expect(result).to eq({ name: "Alice", age: 30 })
+      end
+
+      it "only includes fields present in the output" do
+        mapping = described_class.new do
+          field :full_name, from: :name
+          field :years, from: :age
+        end
+        output = { full_name: "Alice" }
+        result = mapping.reverse(output)
+        expect(result).to eq({ name: "Alice" })
+      end
+
+      it "handles same-name fields (no rename)" do
+        mapping = described_class.new do
+          field :name
+          field :age
+        end
+        output = { name: "Bob", age: 25 }
+        result = mapping.reverse(output)
+        expect(result).to eq({ name: "Bob", age: 25 })
+      end
+
+      it "returns an empty hash for unknown keys" do
+        mapping = described_class.new do
+          field :full_name, from: :name
+        end
+        result = mapping.reverse({ unknown: "value" })
+        expect(result).to eq({})
+      end
+    end
+
+    describe "validation" do
+      it "returns a valid result when all validations pass" do
+        mapping = described_class.new do
+          field :age, from: :raw_age, type: :integer, validate: ->(v) { v > 0 }
+        end
+        result = mapping.map_with_validation({ raw_age: "25" })
+        expect(result).to be_valid
+        expect(result.value).to eq({ age: 25 })
+        expect(result.errors).to be_empty
+      end
+
+      it "returns an invalid result when validation fails" do
+        mapping = described_class.new do
+          field :age, from: :raw_age, type: :integer, validate: ->(v) { v > 0 }
+        end
+        result = mapping.map_with_validation({ raw_age: "-1" })
+        expect(result).not_to be_valid
+        expect(result.value).to eq({ age: -1 })
+        expect(result.errors).to eq([{ field: :age, value: -1 }])
+      end
+
+      it "collects multiple validation errors" do
+        mapping = described_class.new do
+          field :age, type: :integer, validate: ->(v) { v > 0 }
+          field :name, validate: ->(v) { !v.nil? && !v.empty? }
+        end
+        result = mapping.map_with_validation({ age: "-5", name: "" })
+        expect(result).not_to be_valid
+        expect(result.errors.length).to eq(2)
+        expect(result.errors).to include({ field: :age, value: -5 })
+        expect(result.errors).to include({ field: :name, value: "" })
+      end
+
+      it "includes computed fields in validation result" do
+        mapping = described_class.new do
+          field :name
+          computed(:greeting) { |r| "Hi, #{r[:name]}" }
+        end
+        result = mapping.map_with_validation({ name: "Alice" })
+        expect(result).to be_valid
+        expect(result.value).to eq({ name: "Alice", greeting: "Hi, Alice" })
+      end
+
+      it "fields without validate: always pass" do
+        mapping = described_class.new do
+          field :name
+          field :age, type: :integer, validate: ->(v) { v > 0 }
+        end
+        result = mapping.map_with_validation({ name: "Alice", age: "30" })
+        expect(result).to be_valid
+        expect(result.value).to eq({ name: "Alice", age: 30 })
+      end
+    end
   end
 end

@@ -114,14 +114,100 @@ mapping.map(input)
 
 Supported types: `:string`, `:integer`, `:float`, `:boolean`.
 
+### Conditional mapping
+
+Include a field only when a condition is met using the `if:` parameter:
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  field :name
+  field :role, from: :raw_role, if: ->(record) { record[:admin] }
+end
+
+mapping.map({ name: "Alice", raw_role: "superuser", admin: true })
+# => { name: "Alice", role: "superuser" }
+
+mapping.map({ name: "Bob", raw_role: "superuser", admin: false })
+# => { name: "Bob" }
+```
+
+### Computed fields
+
+Derive fields from the full source record using `computed`:
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  field :email
+  computed(:full_name) { |record| "#{record[:first]} #{record[:last]}" }
+  computed(:initials) { |record| "#{record[:first][0]}#{record[:last][0]}" }
+end
+
+mapping.map({ email: "a@b.com", first: "Alice", last: "Smith" })
+# => { email: "a@b.com", full_name: "Alice Smith", initials: "AS" }
+```
+
+### Collection mapping
+
+Split a single string value into an array using `array_field`:
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  array_field :tags, from: :tag_csv, split: ","
+  array_field :items, from: :item_str, split: "|"
+end
+
+mapping.map({ tag_csv: "ruby,rails,gem", item_str: "one|two|three" })
+# => { tags: ["ruby", "rails", "gem"], items: ["one", "two", "three"] }
+```
+
+### Reverse mapping
+
+Transform output back to the input schema using inverse field mappings:
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  field :full_name, from: :name
+  field :years, from: :age
+end
+
+output = { full_name: "Alice", years: 30 }
+mapping.reverse(output)
+# => { name: "Alice", age: 30 }
+```
+
+### Validation
+
+Validate mapped values using the `validate:` parameter. Use `map_with_validation` to collect errors:
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  field :age, from: :raw_age, type: :integer, validate: ->(v) { v > 0 }
+  field :name, validate: ->(v) { !v.nil? && !v.empty? }
+end
+
+result = mapping.map_with_validation({ raw_age: "25", name: "Alice" })
+result.valid?  # => true
+result.value   # => { age: 25, name: "Alice" }
+result.errors  # => []
+
+result = mapping.map_with_validation({ raw_age: "-1", name: "" })
+result.valid?  # => false
+result.value   # => { age: -1, name: "" }
+result.errors  # => [{ field: :age, value: -1 }, { field: :name, value: "" }]
+```
+
 ## API
 
 | Method | Description |
 |--------|-------------|
 | `DataMapper.define(&block)` | Create a new mapping with the DSL |
-| `Mapping#field(target, from:, default:, type:, &transform)` | Define a field mapping |
+| `Mapping#field(target, from:, default:, type:, if:, validate:, split:, &transform)` | Define a field mapping |
+| `Mapping#computed(target, &block)` | Define a computed field derived from the full record |
+| `Mapping#array_field(target, from:, split:, &transform)` | Define a field that splits a string into an array |
 | `Mapping#map(hash)` | Apply mapping to a single hash |
+| `Mapping#map_with_validation(hash)` | Apply mapping and return a `MappingResult` with errors |
 | `Mapping#map_all(array)` | Apply mapping to an array of hashes |
+| `Mapping#reverse(hash)` | Transform output hash back to input schema |
 | `Mapping#from_csv(string, headers: true)` | Parse CSV and map each row |
 | `Mapping#from_json(json_string)` | Parse JSON string and map the result |
 
