@@ -4,7 +4,7 @@
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-data_mapper.svg)](https://rubygems.org/gems/philiprehberger-data_mapper)
 [![License](https://img.shields.io/github/license/philiprehberger/rb-data-mapper)](LICENSE)
 
-Data transformation DSL for mapping hashes and CSV rows in Ruby.
+Data transformation DSL for mapping hashes and CSV rows in Ruby
 
 ## Requirements
 
@@ -16,12 +16,6 @@ Add to your Gemfile:
 
 ```ruby
 gem "philiprehberger-data_mapper"
-```
-
-Then run:
-
-```bash
-bundle install
 ```
 
 Or install directly:
