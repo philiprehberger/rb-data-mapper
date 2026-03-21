@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation support with `validate:` parameter and `map_with_validation` method
 - `MappingResult` class wrapping mapped value and collected validation errors
 
-## [0.2.1] - 2026-03-14
+## [0.2.1] - 2026-03-16
 
 ### Changed
 - Add License badge to README
