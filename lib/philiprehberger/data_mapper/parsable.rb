@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "csv"
-require "json"
+require 'csv'
+require 'json'
 
 module Philiprehberger
   module DataMapper
