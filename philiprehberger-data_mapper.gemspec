@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = 'Data transformation DSL for mapping hashes and CSV rows'
   spec.description = 'A zero-dependency Ruby gem for transforming data between formats ' \
-                       'with a mapping DSL, field renaming, type conversion, validation, and CSV support.'
+                     'with a mapping DSL, field renaming, type conversion, validation, and CSV support.'
   spec.homepage = 'https://philiprehberger.com/open-source-packages/ruby/philiprehberger-data_mapper'
   spec.license = 'MIT'
 
