@@ -749,4 +749,15 @@ RSpec.describe Philiprehberger::DataMapper do
       end
     end
   end
+
+  describe '#field_names' do
+    it 'returns the targets for fields and computed fields' do
+      mapping = described_class.define do
+        field(:name, from: :Name)
+        field(:email, from: :Email)
+        computed(:upper) { |r| r[:Name].to_s.upcase }
+      end
+      expect(mapping.field_names).to eq(%i[name email upper])
+    end
+  end
 end

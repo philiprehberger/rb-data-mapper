@@ -44,6 +44,13 @@ module Philiprehberger
         array.map { |hash| map(hash) }
       end
 
+      # Names (targets) of every declared field, including computed fields.
+      #
+      # @return [Array<Symbol>]
+      def field_names
+        @fields.map(&:target) + @computed_fields.map(&:target)
+      end
+
       private
 
       def map_fields(hash)
