@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-04-21
+
+### Added
+- `Mapping#call(hash)` — alias for `#map`, enabling `Mapping` instances to be used as callables
+- `Mapping#to_proc` — returns a `Proc` that maps a single record, allowing idiomatic usage like `rows.map(&mapping)`
+
 ## [0.5.0] - 2026-04-18
 
 ### Added

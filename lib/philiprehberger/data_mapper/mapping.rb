@@ -48,6 +48,22 @@ module Philiprehberger
         enumerable.lazy.map { |hash| map(hash) }
       end
 
+      # Proc conversion so a `Mapping` can be passed wherever a callable is expected
+      # (e.g. `rows.map(&mapping)`).
+      #
+      # @return [Proc] a proc that calls `#map` on its argument
+      def to_proc
+        method(:map).to_proc
+      end
+
+      # Alias of `#map` so a Mapping instance can be invoked like a function.
+      #
+      # @param hash [Hash] the record to map
+      # @return [Hash]
+      def call(hash)
+        map(hash)
+      end
+
       # Names (targets) of every declared field, including computed fields.
       #
       # @return [Array<Symbol>]

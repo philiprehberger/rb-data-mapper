@@ -801,4 +801,27 @@ RSpec.describe Philiprehberger::DataMapper do
       expect(mapping.field_names).to eq(%i[name email upper])
     end
   end
+
+  describe '#to_proc / #call' do
+    let(:mapping) do
+      described_class.define do
+        field(:name, from: :Name)
+      end
+    end
+
+    it '#call is an alias for #map' do
+      expect(mapping.call({ Name: 'Ada' })).to eq(mapping.map({ Name: 'Ada' }))
+    end
+
+    it '#to_proc returns a Proc that maps a single record' do
+      proc = mapping.to_proc
+      expect(proc).to be_a(Proc)
+      expect(proc.call({ Name: 'Ada' })).to eq({ name: 'Ada' })
+    end
+
+    it 'plays nicely with the & operator for batch mapping' do
+      rows = [{ Name: 'Ada' }, { Name: 'Lin' }]
+      expect(rows.map(&mapping)).to eq([{ name: 'Ada' }, { name: 'Lin' }])
+    end
+  end
 end

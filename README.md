@@ -69,6 +69,20 @@ mapping.map_lazy(infinite).first(3)
 # => [{ id: 1 }, { id: 2 }, { id: 3 }]
 ```
 
+### Use as a callable
+
+`Mapping#call` is an alias for `#map`, and `Mapping#to_proc` returns a proc, so a mapping can be passed wherever a callable is expected:
+
+```ruby
+mapping = Philiprehberger::DataMapper.define do
+  field :name, from: :Name
+end
+
+mapping.call({ Name: "Ada" })      # => { name: "Ada" }
+[{ Name: "Ada" }, { Name: "Lin" }].map(&mapping)
+# => [{ name: "Ada" }, { name: "Lin" }]
+```
+
 ### Parse CSV
 
 ```ruby
@@ -223,6 +237,8 @@ result.errors  # => [{ field: :age, value: -1 }, { field: :name, value: "" }]
 | `Mapping#computed(target, &block)` | Define a computed field derived from the full record |
 | `Mapping#array_field(target, from:, split:, &transform)` | Define a field that splits a string into an array |
 | `Mapping#map(hash)` | Apply mapping to a single hash |
+| `Mapping#call(hash)` | Alias for `#map` — lets a `Mapping` be used as a callable |
+| `Mapping#to_proc` | Return a `Proc` that calls `#map`, usable with `array.map(&mapping)` |
 | `Mapping#map_with_validation(hash)` | Apply mapping and return a `MappingResult` with errors |
 | `Mapping#map_all(array)` | Apply mapping to an array of hashes |
 | `Mapping#map_lazy(enumerable)` | Return a `Lazy` Enumerator applying `#map` per-element for streaming |
