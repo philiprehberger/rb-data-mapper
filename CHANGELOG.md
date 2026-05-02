@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-01
+
+### Added
+- `Mapping#has_field?(name)` — boolean predicate for whether the mapping declares an output field with that name (covers both regular and computed fields)
+
 ## [0.6.0] - 2026-04-21
 
 ### Added

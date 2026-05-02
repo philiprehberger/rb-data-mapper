@@ -802,6 +802,31 @@ RSpec.describe Philiprehberger::DataMapper do
     end
   end
 
+  describe '#has_field?' do
+    let(:mapping) do
+      described_class.define do
+        field(:name, from: :Name)
+        computed(:upper) { |r| r[:Name].to_s.upcase }
+      end
+    end
+
+    it 'returns true for declared regular fields' do
+      expect(mapping.has_field?(:name)).to be(true)
+    end
+
+    it 'returns true for declared computed fields' do
+      expect(mapping.has_field?(:upper)).to be(true)
+    end
+
+    it 'returns false for undeclared fields' do
+      expect(mapping.has_field?(:missing)).to be(false)
+    end
+
+    it 'accepts strings and coerces to symbol' do
+      expect(mapping.has_field?('name')).to be(true)
+    end
+  end
+
   describe '#to_proc / #call' do
     let(:mapping) do
       described_class.define do

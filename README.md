@@ -205,6 +205,10 @@ mapping = Philiprehberger::DataMapper.define do
   computed(:upper) { |r| r[:Name].upcase }
 end
 mapping.field_names  # => [:name, :upper]
+
+mapping.has_field?(:name)    # => true
+mapping.has_field?(:upper)   # => true
+mapping.has_field?(:missing) # => false
 ```
 
 ### Validation
@@ -243,6 +247,7 @@ result.errors  # => [{ field: :age, value: -1 }, { field: :name, value: "" }]
 | `Mapping#map_all(array)` | Apply mapping to an array of hashes |
 | `Mapping#map_lazy(enumerable)` | Return a `Lazy` Enumerator applying `#map` per-element for streaming |
 | `Mapping#field_names` | Array of symbol targets for declared fields and computed fields |
+| `Mapping#has_field?(name)` | Whether the mapping declares an output field with that name |
 | `Mapping#reverse(hash)` | Transform output hash back to input schema |
 | `Mapping#from_csv(string, headers: true)` | Parse CSV and map each row |
 | `Mapping#from_json(json_string)` | Parse JSON string and map the result |

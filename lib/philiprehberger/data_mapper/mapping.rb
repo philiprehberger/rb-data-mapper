@@ -71,6 +71,19 @@ module Philiprehberger
         @fields.map(&:target) + @computed_fields.map(&:target)
       end
 
+      # Whether the mapping declares an output field with the given name.
+      #
+      # Matches both regular and computed fields. Comparison is exact
+      # (no symbol/string coercion beyond `to_sym` on the input).
+      #
+      # @param name [Symbol, String] the target field name to check
+      # @return [Boolean]
+      def has_field?(name)
+        target = name.to_sym
+        @fields.any? { |f| f.target == target } ||
+          @computed_fields.any? { |c| c.target == target }
+      end
+
       private
 
       def map_fields(hash)
